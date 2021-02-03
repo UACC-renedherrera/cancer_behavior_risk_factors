@@ -41,3 +41,13 @@ vignettes/*.pdf
 # ignore folders
 data/
 figures/
+communication/
+
+# ignore filetypes
+*.svg
+*.png
+*.pptx
+*.xlsx
+*.docx
+*.csv
+*.pdf
