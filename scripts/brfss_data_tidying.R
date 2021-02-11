@@ -1,152 +1,1365 @@
-# set up
-# load packages 
+# set up 
+# load packages ----
 library(here)
 library(tidyverse)
 library(readxl)
 library(lubridate)
 
-# read data 
-brfss_2016 <- read_excel("data/raw/BRFSS_Screening.xlsx")
-brfss_2018 <- read_excel("data/raw/BRFSS_Screening.xlsx", sheet = 2)
-####
+# read data ----
+brfss_2014 <- read_excel("data/raw/BRFSS_Screening_2014_18_southern_AZ.xlsx", sheet = 1)
+brfss_2016 <- read_excel("data/raw/BRFSS_Screening_2014_18_southern_AZ.xlsx", sheet = 2)
+brfss_2018 <- read_excel("data/raw/BRFSS_Screening_2014_18_southern_AZ.xlsx", sheet = 3)
 
 # inspect
+glimpse(brfss_2014)
 glimpse(brfss_2016)
 glimpse(brfss_2018)
 
-# gather by county 
-# Pima county 
-brfss_16_pima <- brfss_2016 %>%
-  select(`...1`:`...5`) %>%
-  rename("label" = `...1`, 
-         "all" = `Pima`, 
-         "nhw" = `...3`, 
-         "hispanic" = `...4`, 
-         "aian" = `...5`) %>%
-  slice(2:34) %>%
-  mutate(county = "Pima")
+# add year to each dataset 
+brfss_2014 <- mutate(brfss_2014, year = 2014)
+brfss_2016 <- mutate(brfss_2016, year = 2016)
+brfss_2018 <- mutate(brfss_2018, year = 2018)
 
-#2018
-brfss_19_pima <- brfss_2018 %>%
-  select(`...1`:`...5`) %>%
-  rename("label" = `...1`, 
-         "all" = `Pima`, 
-         "nhw" = `...3`, 
-         "hispanic" = `...4`, 
-         "aian" = `...5`) %>%
-  slice(2:34) %>%
-  mutate(county = "Pima")
+# tidy the 2014 dataset ----
+brfss_2014 
 
-# Pinal 
-brfss_16_pinal <- brfss_2016 %>%
-  select(`...1`, `Pinal`:`...9`) %>%
-  rename("label" = `...1`, 
-         "all" = `Pinal`, 
-         "nhw" = `...7`, 
-         "hispanic" = `...8`, 
-         "aian" = `...9`) %>%
-  slice(2:34) %>%
-  mutate(county = "Pinal")
-
-# 2018
-brfss_19_pinal <- brfss_2018 %>%
-  select(`...1`, `Pinal`:`...9`) %>%
-  rename("label" = `...1`, 
-         "all" = `Pinal`, 
-         "nhw" = `...7`, 
-         "hispanic" = `...8`, 
-         "aian" = `...9`) %>%
-  slice(2:34) %>%
-  mutate(county = "Pinal")
-
-# Cochise & Santa Cruz 
-brfss_16_cochise <- brfss_2016 %>%
-  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee`:`...13`) %>%
-  rename("label" = `...1`, 
-         "all" = `Santa Cruz, Cochise, Graham, Greenlee`, 
-         "nhw" = `...11`, 
-         "hispanic" = `...12`, 
-         "aian" = `...13`) %>%
-  slice(2:34) %>%
-  mutate(county = "Santa Cruz, Cochise, Graham, Greenlee")
-
-# 2018
-brfss_19_cochise <- brfss_2018 %>%
-  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee`:`...13`) %>%
-  rename("label" = `...1`, 
-         "all" = `Santa Cruz, Cochise, Graham, Greenlee`, 
-         "nhw" = `...11`, 
-         "hispanic" = `...12`, 
-         "aian" = `...13`) %>%
-  slice(2:34) %>%
-  mutate(county = "Santa Cruz, Cochise, Graham, Greenlee")
-
-# Yuma 
-brfss_16_yuma <- brfss_2016 %>%
-  select(`...1`, `Yuma, La Paz, Mohave`:`...17`) %>%
-  rename("label" = `...1`, 
-         "all" = `Yuma, La Paz, Mohave`, 
-         "nhw" = `...15`, 
-         "hispanic" = `...16`, 
-         "aian" = `...17`) %>%
-  slice(2:34) %>%
-  mutate(county = "Yuma, La Paz, Mohave")
-
-# 2018
-brfss_19_yuma <- brfss_2018 %>%
-  select(`...1`, `Yuma, La Paz, Mohave`:`...17`) %>%
-  rename("label" = `...1`, 
-         "all" = `Yuma, La Paz, Mohave`, 
-         "nhw" = `...15`, 
-         "hispanic" = `...16`, 
-         "aian" = `...17`) %>%
-  slice(2:34) %>%
-  mutate(county = "Yuma, La Paz, Mohave")
-
-# combine all together
-brfss_2016 <- brfss_16_cochise %>%
-  full_join(brfss_16_pima) %>%
-  full_join(brfss_16_pinal) %>%
-  full_join(brfss_16_yuma)
-
-# 2018 
-brfss_2018 <- brfss_19_cochise %>%
-  full_join(brfss_19_pima) %>%
-  full_join(brfss_19_pinal) %>%
-  full_join(brfss_19_yuma)
-
-# gather
-brfss_2016 <- brfss_2016 %>%
-  pivot_longer(cols = 2:5,
-               names_to = "race",
-               values_to = "value"
-               ) %>%
-  mutate(value = as.numeric(value),
-         year = 2016,
-         year = as.integer(year))
-
-# 2018 
-brfss_2018 <- brfss_2018 %>%
+# 2014, pima county ----
+# race ----
+brfss_2014_pima_race <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1:5,11,12) %>%
   pivot_longer(cols = 2:5,
                names_to = "race",
                values_to = "value"
   ) %>%
-  mutate(value = as.numeric(value),
-         year = 2018,
-         year = as.integer(year))
+  mutate(value = as.numeric(value))
 
-# combine both datasets 
-brfss <- full_join(brfss_2016, brfss_2018)
+# inspect  
+glimpse(brfss_2014_pima_race)
+#sample for data quality check
+brfss_2014_pima_race %>%
+  sample_n(1)
+
+# 2014, pima county, 
+# age ----
+brfss_2014_pima_age <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect
+brfss_2014_pima_age %>%
+  filter(age == "7-17") %>%
+  sample_n(5)
+
+# inspect  
+glimpse(brfss_2014_pima_age)
+#sample for data quality check
+brfss_2014_pima_age %>%
+  sample_n(1)
+
+# 2014, pima county, 
+# sex ----
+brfss_2014_pima_sex <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_pima_sex)
+#sample for data quality check
+brfss_2014_pima_sex %>%
+  sample_n(1)
+
+# 2014, pinal county ----
+# race ----
+# this is a combination of pinal and gila counties 
+brfss_2014_pinal_race <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal`:`Pinal, Gila...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal`,
+         "nhw" = `Pinal, Gila...12`,
+         "hispanic" = `Pinal, Gila...13`,
+         "aian" = `Pinal, Gila...14`,
+         "7-17" = `Pinal, Gila...15`,
+         "18-64" = `Pinal, Gila...16`,
+         ">=65" = `Pinal, Gila...17`,
+         "men" = `Pinal, Gila...18`,
+         "women" = `Pinal, Gila...19`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_pinal_race)
+#sample for data quality check
+brfss_2014_pinal_race %>%
+  sample_n(1)
+
+# 2014, pinal county, 
+# age----
+brfss_2014_pinal_age <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal`:`Pinal, Gila...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal`,
+         "nhw" = `Pinal, Gila...12`,
+         "hispanic" = `Pinal, Gila...13`,
+         "aian" = `Pinal, Gila...14`,
+         "7-17" = `Pinal, Gila...15`,
+         "18-64" = `Pinal, Gila...16`,
+         ">=65" = `Pinal, Gila...17`,
+         "men" = `Pinal, Gila...18`,
+         "women" = `Pinal, Gila...19`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_pinal_age)
+#sample for data quality check
+brfss_2014_pinal_age %>%
+  sample_n(1)
+
+# 2014, pinal county, 
+# sex ----
+brfss_2014_pinal_sex <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal`:`Pinal, Gila...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal`,
+         "nhw" = `Pinal, Gila...12`,
+         "hispanic" = `Pinal, Gila...13`,
+         "aian" = `Pinal, Gila...14`,
+         "7-17" = `Pinal, Gila...15`,
+         "18-64" = `Pinal, Gila...16`,
+         ">=65" = `Pinal, Gila...17`,
+         "men" = `Pinal, Gila...18`,
+         "women" = `Pinal, Gila...19`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_pinal_sex)
+#sample for data quality check
+brfss_2014_pinal_sex %>%
+  sample_n(1)
+
+# 2014, santa cruz & Cochise county ----
+# race ----
+# this is a combination of santa cruz, cochise, graham, and greenlee
+brfss_2014_sc_race <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_sc_race)
+#sample for data quality check
+brfss_2014_sc_race %>%
+  sample_n(1)
+
+# 2014, santa cruz & Cochise county
+# age----
+brfss_2014_sc_age <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_sc_age)
+#sample for data quality check
+brfss_2014_sc_age %>%
+  sample_n(1)
+
+# 2014, santa cruz & Cochise county 
+# sex ----
+brfss_2014_sc_sex <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_sc_sex)
+#sample for data quality check
+brfss_2014_sc_sex %>%
+  sample_n(1)
+
+# 2014, Yuma ----
+# race ----
+# this is a combination of yuma, la paz, and mohave counties 
+brfss_2014_yuma_race <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_yuma_race)
+#sample for data quality check
+brfss_2014_yuma_race %>%
+  sample_n(1)
+
+# 2014, Yuma 
+# age----
+brfss_2014_yuma_age <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_yuma_age)
+#sample for data quality check
+brfss_2014_yuma_age %>%
+  sample_n(1)
+
+# 2014, Yuma 
+# sex ----
+brfss_2014_yuma_sex <- brfss_2014 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2014_yuma_sex)
+#sample for data quality check
+brfss_2014_yuma_sex %>%
+  sample_n(1)
+
+# 2014 join ----
+# age ----
+brfss_2014_age <- brfss_2014_pima_age %>%
+  full_join(brfss_2014_pinal_age) %>%
+  full_join(brfss_2014_sc_age) %>%
+  full_join(brfss_2014_yuma_age) 
+
+# race ----
+brfss_2014_race <- brfss_2014_pima_race %>%
+  full_join(brfss_2014_pinal_race) %>%
+  full_join(brfss_2014_sc_race) %>%
+  full_join(brfss_2014_yuma_race) 
+
+# sex ----
+brfss_2014_sex <- brfss_2014_pima_sex %>%
+  full_join(brfss_2014_pinal_sex) %>%
+  full_join(brfss_2014_sc_sex) %>%
+  full_join(brfss_2014_yuma_sex) 
+
+# tidy 2016 data ----
+brfss_2016
+
+# 2016, pima county ----
+# race ----
+brfss_2016_pima_race <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_pima_race)
+#sample for data quality check
+brfss_2016_pima_race %>%
+  sample_n(1)
+
+# 2016, pima county, 
+# age ----
+brfss_2016_pima_age <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_pima_age)
+#sample for data quality check
+brfss_2016_pima_age %>%
+  sample_n(1)
+
+# 2016, pima county, 
+# sex ----
+brfss_2016_pima_sex <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_pima_sex)
+#sample for data quality check
+brfss_2016_pima_sex %>%
+  sample_n(1)
+
+# 2016, pinal county ----
+# race ----
+# this is a combination of pinal 
+brfss_2016_pinal_race <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal...11`:`Pinal...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal...11`,
+         "nhw" = `Pinal...12`,
+         "hispanic" = `Pinal...13`,
+         "aian" = `Pinal...14`,
+         "7-17" = `Pinal...15`,
+         "18-64" = `Pinal...16`,
+         ">=65" = `Pinal...17`,
+         "men" = `Pinal...18`,
+         "women" = `Pinal...19`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_pinal_race)
+#sample for data quality check
+brfss_2016_pinal_race %>%
+  sample_n(1)
+
+# 2016, pinal county, 
+# age----
+brfss_2016_pinal_age <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal...11`:`Pinal...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal...11`,
+         "nhw" = `Pinal...12`,
+         "hispanic" = `Pinal...13`,
+         "aian" = `Pinal...14`,
+         "7-17" = `Pinal...15`,
+         "18-64" = `Pinal...16`,
+         ">=65" = `Pinal...17`,
+         "men" = `Pinal...18`,
+         "women" = `Pinal...19`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_pinal_age)
+#sample for data quality check
+brfss_2016_pinal_age %>%
+  sample_n(1)
+
+# 2016, pinal county, 
+# sex ----
+brfss_2016_pinal_sex <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal...11`:`Pinal...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal...11`,
+         "nhw" = `Pinal...12`,
+         "hispanic" = `Pinal...13`,
+         "aian" = `Pinal...14`,
+         "7-17" = `Pinal...15`,
+         "18-64" = `Pinal...16`,
+         ">=65" = `Pinal...17`,
+         "men" = `Pinal...18`,
+         "women" = `Pinal...19`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_pinal_sex)
+#sample for data quality check
+brfss_2016_pinal_sex %>%
+  sample_n(1)
+
+# 2016, santa cruz & Cochise county ----
+# race ----
+# this is a combination of santa cruz, cochise, graham, and greenlee
+brfss_2016_sc_race <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_sc_race)
+#sample for data quality check
+brfss_2016_sc_race %>%
+  sample_n(1)
+
+# 2016, santa cruz & Cochise county
+# age----
+brfss_2016_sc_age <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_sc_age)
+#sample for data quality check
+brfss_2016_sc_age %>%
+  sample_n(1)
+
+# 2016, santa cruz & Cochise county 
+# sex ----
+brfss_2016_sc_sex <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_sc_sex)
+#sample for data quality check
+brfss_2016_sc_sex %>%
+  sample_n(1)
+
+# 2016, Yuma ----
+# race ----
+# this is a combination of yuma, la paz, and mohave counties 
+brfss_2016_yuma_race <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_yuma_race)
+#sample for data quality check
+brfss_2016_yuma_race %>%
+  sample_n(1)
+
+# 2016, Yuma 
+# age----
+brfss_2016_yuma_age <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_yuma_age)
+#sample for data quality check
+brfss_2016_yuma_age %>%
+  sample_n(1)
+
+# 2016, Yuma 
+# sex ----
+brfss_2016_yuma_sex <- brfss_2016 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2016_yuma_sex)
+#sample for data quality check
+brfss_2016_yuma_sex %>%
+  sample_n(1)
+
+# 2016 join ----
+# age ----
+brfss_2016_age <- brfss_2016_pima_age %>%
+  full_join(brfss_2016_pinal_age) %>%
+  full_join(brfss_2016_sc_age) %>%
+  full_join(brfss_2016_yuma_age) 
+
+# race ----
+brfss_2016_race <- brfss_2016_pima_race %>%
+  full_join(brfss_2016_pinal_race) %>%
+  full_join(brfss_2016_sc_race) %>%
+  full_join(brfss_2016_yuma_race) 
+
+# sex ----
+brfss_2016_sex <- brfss_2016_pima_sex %>%
+  full_join(brfss_2016_pinal_sex) %>%
+  full_join(brfss_2016_sc_sex) %>%
+  full_join(brfss_2016_yuma_sex) 
+
+# tidy 2018 data ----
+brfss_2018
+
+# 2018, pima county ----
+# race ----
+brfss_2018_pima_race <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_pima_race)
+#sample for data quality check
+brfss_2018_pima_race %>%
+  sample_n(1)
+
+# 2018, pima county, 
+# age ----
+brfss_2018_pima_age <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_pima_age)
+#sample for data quality check
+brfss_2018_pima_age %>%
+  sample_n(1)
+
+# 2018, pima county, 
+# sex ----
+brfss_2018_pima_sex <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_pima_sex)
+#sample for data quality check
+brfss_2018_pima_sex %>%
+  sample_n(1)
+
+# 2018, pinal county ----
+# race ----
+# this is a combination of pinal and gila counties 
+brfss_2018_pinal_race <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal...11`:`Pinal...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal...11`,
+         "nhw" = `Pinal...12`,
+         "hispanic" = `Pinal...13`,
+         "aian" = `Pinal...14`,
+         "7-17" = `Pinal...15`,
+         "18-64" = `Pinal...16`,
+         ">=65" = `Pinal...17`,
+         "men" = `Pinal...18`,
+         "women" = `Pinal...19`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_pinal_race)
+#sample for data quality check
+brfss_2018_pinal_race %>%
+  sample_n(1)
+
+# 2018, pinal county, 
+# age----
+brfss_2018_pinal_age <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal...11`:`Pinal...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal...11`,
+         "nhw" = `Pinal...12`,
+         "hispanic" = `Pinal...13`,
+         "aian" = `Pinal...14`,
+         "7-17" = `Pinal...15`,
+         "18-64" = `Pinal...16`,
+         ">=65" = `Pinal...17`,
+         "men" = `Pinal...18`,
+         "women" = `Pinal...19`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_pinal_age)
+#sample for data quality check
+brfss_2018_pinal_age %>%
+  sample_n(1)
+
+# 2018, pinal county, 
+# sex ----
+brfss_2018_pinal_sex <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Pinal...11`:`Pinal...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal...11`,
+         "nhw" = `Pinal...12`,
+         "hispanic" = `Pinal...13`,
+         "aian" = `Pinal...14`,
+         "7-17" = `Pinal...15`,
+         "18-64" = `Pinal...16`,
+         ">=65" = `Pinal...17`,
+         "men" = `Pinal...18`,
+         "women" = `Pinal...19`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_pinal_sex)
+#sample for data quality check
+brfss_2018_pinal_sex %>%
+  sample_n(1)
+
+# 2018, santa cruz & Cochise county ----
+# race ----
+# this is a combination of santa cruz, cochise, graham, and greenlee
+brfss_2018_sc_race <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_sc_race)
+#sample for data quality check
+brfss_2018_sc_race %>%
+  sample_n(1)
+
+# 2018, santa cruz & Cochise county
+# age----
+brfss_2018_sc_age <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_sc_age)
+#sample for data quality check
+brfss_2018_sc_age %>%
+  sample_n(1)
+
+# 2018, santa cruz & Cochise county 
+# sex ----
+brfss_2018_sc_sex <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_sc_sex)
+#sample for data quality check
+brfss_2018_sc_sex %>%
+  sample_n(1)
+
+# 2018, Yuma ----
+# race ----
+# this is a combination of yuma, la paz, and mohave counties 
+brfss_2018_yuma_race <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1:5,11,12) %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_yuma_race)
+#sample for data quality check
+brfss_2018_yuma_race %>%
+  sample_n(1)
+
+# 2018, Yuma 
+# age----
+brfss_2018_yuma_age <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1,6:8,11,12) %>%
+  pivot_longer(cols = 2:4,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_yuma_age)
+#sample for data quality check
+brfss_2018_yuma_age %>%
+  sample_n(1)
+
+# 2018, Yuma 
+# sex ----
+brfss_2018_yuma_sex <- brfss_2018 %>%
+  drop_na(`...1`) %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  ) %>%
+  select(1,9:12) %>%
+  pivot_longer(cols = 2:3,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  mutate(value = as.numeric(value))
+
+# inspect  
+glimpse(brfss_2018_yuma_sex)
+#sample for data quality check
+brfss_2018_yuma_sex %>%
+  sample_n(1)
+
+# 2018 join ----
+# age ----
+brfss_2018_age <- brfss_2018_pima_age %>%
+  full_join(brfss_2018_pinal_age) %>%
+  full_join(brfss_2018_sc_age) %>%
+  full_join(brfss_2018_yuma_age) 
+
+# race ----
+brfss_2018_race <- brfss_2018_pima_race %>%
+  full_join(brfss_2018_pinal_race) %>%
+  full_join(brfss_2018_sc_race) %>%
+  full_join(brfss_2018_yuma_race) 
+
+# sex ----
+brfss_2018_sex <- brfss_2018_pima_sex %>%
+  full_join(brfss_2018_pinal_sex) %>%
+  full_join(brfss_2018_sc_sex) %>%
+  full_join(brfss_2018_yuma_sex) 
+
+# combine years ----
+# age ----
+brfss_age <- brfss_2014_age %>%
+  full_join(brfss_2016_age) %>%
+  full_join(brfss_2018_age)
+
+# sample for quality check
+sample_n(brfss_age, 1)
+
+# save to rds
+write_rds(brfss_age, "data/tidy/brfss_az_catchment_age.rds")
+
+# race ----
+brfss_race <- brfss_2014_race %>%
+  full_join(brfss_2016_race) %>%
+  full_join(brfss_2018_race)
+
+# sample for quality check
+sample_n(brfss_race, 1)
+
+# save to rds
+write_rds(brfss_race, "data/tidy/brfss_az_catchment_race.rds")
+
+# sex ----
+brfss_sex <- brfss_2014_sex %>%
+  full_join(brfss_2016_sex) %>%
+  full_join(brfss_2018_sex)
+
+# sample for quality check
+sample_n(brfss_sex, 1)
+
+# save to rds
+write_rds(brfss_sex, "data/tidy/brfss_az_catchment_sex.rds")
+
+
+# stop here
+# join all datasets 
+brfss <- brfss_2014 %>%
+  full_join(brfss_2016) %>%
+  full_join(brfss_2018) %>%
+  # drop the header rows from each set 
+  drop_na(`...1`)
 
 # inspect
 glimpse(brfss)
-str(brfss)
-distinct(brfss, county)
-distinct(brfss, race)
-distinct(brfss, year)
+
+# separate by county
+# pima 
+brfss_pima <- brfss %>%
+  select(`...1`, `Pima...2`:`Pima...10`, year) %>%
+  mutate(county = "Pima") %>%
+  rename("label" = `...1`,
+         "all" = `Pima...2`,
+         "nhw" = `Pima...3`,
+         "hispanic" = `Pima...4`,
+         "aian" = `Pima...5`,
+         "7-17" = `Pima...6`,
+         "18-64" = `Pima...7`,
+         ">=65" = `Pima...8`,
+         "men" = `Pima...9`,
+         "women" = `Pima...10`
+         )
+  
+# pinal
+# for year 2014 also includes Gila county
+brfss_pinal <- brfss %>%
+  select(`...1`, `Pinal`:`Pinal, Gila...19`, year) %>%
+  mutate(county = "Pinal") %>%
+  rename("label" = `...1`,
+         "all" = `Pinal`,
+         "nhw" = `Pinal, Gila...12`,
+         "hispanic" = `Pinal, Gila...13`,
+         "aian" = `Pinal, Gila...14`,
+         "7-17" = `Pinal, Gila...15`,
+         "18-64" = `Pinal, Gila...16`,
+         ">=65" = `Pinal, Gila...17`,
+         "men" = `Pinal, Gila...18`,
+         "women" = `Pinal, Gila...19`
+  )
+
+# Santa Cruz, Cochise, Graham, Greenlee
+brfss_santacruz <- brfss %>%
+  select(`...1`, `Santa Cruz, Cochise, Graham, Greenlee...20`:`Santa Cruz, Cochise, Graham, Greenlee...28`, year) %>%
+  mutate(county = "Santa Cruz & Cochise") %>%
+  rename("label" = `...1`,
+         "all" = `Santa Cruz, Cochise, Graham, Greenlee...20`,
+         "nhw" = `Santa Cruz, Cochise, Graham, Greenlee...21`,
+         "hispanic" = `Santa Cruz, Cochise, Graham, Greenlee...22`,
+         "aian" = `Santa Cruz, Cochise, Graham, Greenlee...23`,
+         "7-17" = `Santa Cruz, Cochise, Graham, Greenlee...24`,
+         "18-64" = `Santa Cruz, Cochise, Graham, Greenlee...25`,
+         ">=65" = `Santa Cruz, Cochise, Graham, Greenlee...26`,
+         "men" = `Santa Cruz, Cochise, Graham, Greenlee...27`,
+         "women" = `Santa Cruz, Cochise, Graham, Greenlee...28`
+  )
+
+# Yuma, La Paz, Mohave 
+brfss_yuma <- brfss %>%
+  select(`...1`, `Yuma, La Paz, Mohave...29`:`Yuma, La Paz, Mohave...37`, year) %>%
+  mutate(county = "Yuma") %>%
+  rename("label" = `...1`,
+         "all" = `Yuma, La Paz, Mohave...29`,
+         "nhw" = `Yuma, La Paz, Mohave...30`,
+         "hispanic" = `Yuma, La Paz, Mohave...31`,
+         "aian" = `Yuma, La Paz, Mohave...32`,
+         "7-17" = `Yuma, La Paz, Mohave...33`,
+         "18-64" = `Yuma, La Paz, Mohave...34`,
+         ">=65" = `Yuma, La Paz, Mohave...35`,
+         "men" = `Yuma, La Paz, Mohave...36`,
+         "women" = `Yuma, La Paz, Mohave...37`
+  )
+
+# join all together
+brfss <- brfss_pima %>%
+  full_join(brfss_pinal) %>%
+  full_join(brfss_santacruz) %>%
+  full_join(brfss_yuma)
+
+glimpse(brfss)
+
+# gather by race 
+brfss_race <- brfss %>%
+  pivot_longer(cols = 2:5,
+               names_to = "race",
+               values_to = "value"
+               ) %>%
+  select(year, county, race, label, value) %>%
+  mutate(value = as.numeric(value))
+
+# gather by age
+brfss_age <- brfss %>%
+  pivot_longer(cols = 6:8,
+               names_to = "age",
+               values_to = "value"
+  ) %>%
+  select(year, county, age, label, value) %>%
+  mutate(value = as.numeric(value))
+
+# gather by sex
+brfss_sex <- brfss %>%
+  pivot_longer(cols = 9:10,
+               names_to = "sex",
+               values_to = "value"
+  ) %>%
+  select(year, county, sex, label, value) %>%
+  mutate(value = as.numeric(value))
 
 # isolate the variables 
-variables <- distinct(brfss, label)
+variables <- distinct(brfss_race, label) 
+
+write_csv(variables, "data/tidy/az_brfss_variables_of_interest.csv")
+
+# bar chart of breast cancer screening by county, year, and age
+brfss_age %>%
+  filter(label == "Had a mammogram") %>%
+  ggplot(mapping = aes(x = county, y = value, fill = age)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(y = "",
+       x = "County",
+       fill = "Age Group",
+       title = "Breast Cancer Screening",
+       subtitle = "Had a mammogram?",
+       caption = "Source: AZ BRFSS") +
+  facet_wrap(~year)
+
+# colorectal cancer screening line chart 
+brfss_age %>%
+  filter(label == "Ever had sigmoidoscopy/colonoscopy") %>%
+  ggplot(mapping = aes(x = year, y = value, color = age)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~county) +
+  xlim(2010, 2020) +
+  labs(y = "",
+       x = "Year",
+       color = "Age Group",
+       title = "Colorectal Cancer Screening",
+       subtitle = "Ever had sigmoidoscopy/colonoscopy?",
+       caption = "Source: AZ BRFSS")
 
 # exploratory
 brfss %>%
