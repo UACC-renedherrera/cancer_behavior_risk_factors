@@ -108,7 +108,9 @@ brfss_2014 <- brfss_2014 %>%
                         "Unknown/Refused" = "9"),
     SEX = fct_recode(SEX,
                           "Male" = "1",
-                          "Female" = "2"))
+                          "Female" = "2",
+                     "Unknown" = "7",
+                     "Refused" = "9"))
 
 # save to disk
 write_rds(brfss_2014, "data/tidy/brfss_usa_2014.RDS")
@@ -245,7 +247,9 @@ brfss_2016 <- brfss_2016 %>%
                              "Unknown/Refused" = "9"),
          SEX = fct_recode(SEX,
                           "Male" = "1",
-                          "Female" = "2"))
+                          "Female" = "2",
+                          "Unknown" = "7",
+                          "Refused" = "9"))
 
 # save to disk
 write_rds(brfss_2016, "data/tidy/brfss_usa_2016.RDS")
@@ -382,7 +386,9 @@ brfss_2018 <- brfss_2018 %>%
                              "Unknown/Refused" = "9"),
          SEX = fct_recode(SEX,
                           "Male" = "1",
-                          "Female" = "2"))
+                          "Female" = "2",
+                          "Unknown" = "7",
+                          "Refused" = "9"))
 
 # save to disk
 write_rds(brfss_2018, "data/tidy/brfss_usa_2018.RDS")
