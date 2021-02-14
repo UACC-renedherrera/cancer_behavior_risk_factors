@@ -61,6 +61,7 @@ brfss_2014 <- brfss_2014 %>%
          SEX = as_factor(SEX),
          YEAR = 2014)
 
+# recode factors 
 brfss_2014 <- brfss_2014 %>%
   mutate(HADMAM = fct_recode(HADMAM,
                              "Yes" = "1",
@@ -200,6 +201,7 @@ brfss_2016 <- brfss_2016 %>%
          SEX = as_factor(SEX),
          YEAR = 2016)
 
+# recode factors
 brfss_2016 <- brfss_2016 %>%
   mutate(HADMAM = fct_recode(HADMAM,
                              "Yes" = "1",
@@ -339,6 +341,7 @@ brfss_2018 <- brfss_2018 %>%
          SEX = as_factor(SEX),
          YEAR = 2018)
 
+# recode factors
 brfss_2018 <- brfss_2018 %>%
   mutate(HADMAM = fct_recode(HADMAM,
                              "Yes" = "1",
@@ -431,4 +434,28 @@ brfss_az <- brfss_2014_az %>%
 
 # save to disk
 write_rds(brfss_az, "data/tidy/brfss_az.RDS")
+
+# produce breast cancer screening dataset ---- 
+brfss_breast <- brfss_2014_breast %>%
+  full_join(brfss_2016_breast) %>%
+  full_join(brfss_2018_breast)
+
+# save to disk
+write_rds(brfss_breast, "data/tidy/brfss_usa_breast.RDS")
+
+# produce cervical cancer screening dataset ---- 
+brfss_cervical <- brfss_2014_cervical %>%
+  full_join(brfss_2016_cervical) %>%
+  full_join(brfss_2018_cervical)
+
+# save to disk
+write_rds(brfss_cervical, "data/tidy/brfss_usa_cervical.RDS")
+
+# produce colorectal cancer screening dataset ---- 
+brfss_colorectal <- brfss_2014_colorectal %>%
+  full_join(brfss_2016_colorectal) %>%
+  full_join(brfss_2018_colorectal)
+
+# save to disk
+write_rds(brfss_colorectal, "data/tidy/brfss_usa_colorectal.RDS")
 
