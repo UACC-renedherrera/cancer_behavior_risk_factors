@@ -8,7 +8,7 @@ library(ggthemes)
 # read data ----
 brfss_breast <- read_rds("data/tidy/brfss_usa_breast.RDS")
 brfss_cervical <- read_rds("data/tidy/brfss_usa_cervical.RDS")
-brfss_colorectal <- read_rds("data/tidy/brfss_usa_cervical.RDS")
+brfss_colorectal <- read_rds("data/tidy/brfss_usa_colorectal.RDS")
 
 # breast cancer screening ----
 # plot proportion had mammogram over time by race
@@ -27,10 +27,13 @@ brfss_breast %>%
   facet_wrap(~X_RACE) +
   theme_bw() + 
   labs(title = "Breast Cancer Screening by Race / Ethnicity",
-       subtitle = "AZ: Have You Ever Had a Mammogram?",
+       subtitle = "USA: Have You Ever Had a Mammogram?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_breast_race.png",
+       dpi = 300)
 
 # plot proportion had mammogram over time by age
 # only for non hispanic white, american indian, and hispanic
@@ -49,10 +52,13 @@ brfss_breast %>%
   facet_wrap(~X_AGE65YR) +
   theme_bw() + 
   labs(title = "Breast Cancer Screening by Age Group",
-       subtitle = "AZ: Have You Ever Had a Mammogram?",
+       subtitle = "USA: Have You Ever Had a Mammogram?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_breast_age.png",
+       dpi = 300)
 
 # cervical cancer screening ---- 
 # proportion had pap test ----
@@ -72,10 +78,13 @@ brfss_cervical %>%
   facet_wrap(~X_RACE) +
   theme_bw() + 
   labs(title = "Cervical Cancer Screening by Race / Ethnicity",
-       subtitle = "AZ: Have You Ever Had a Pap Test?",
+       subtitle = "USA: Have You Ever Had a Pap Test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_cervical_pap_race.png",
+       dpi = 300)
 
 # plot proportion had pap test over time by age
 # only for non hispanic white, american indian, and hispanic
@@ -94,10 +103,13 @@ brfss_cervical %>%
   facet_wrap(~X_AGE65YR) +
   theme_bw() + 
   labs(title = "Cervical Cancer Screening by Age Group",
-       subtitle = "AZ: Have You Ever Had a Pap Test?",
+       subtitle = "USA: Have You Ever Had a Pap Test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_cervical__pap_age.png",
+       dpi = 300)
 
 # proportion had hpv test ----
 # by race 
@@ -115,10 +127,13 @@ brfss_cervical %>%
   facet_wrap(~X_RACE) +
   theme_bw() + 
   labs(title = "Cervical Cancer Screening by Race / Ethnicity",
-       subtitle = "AZ: Have You Ever Had an HPV Test?",
+       subtitle = "USA: Have You Ever Had an HPV Test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_cervical_hpv_race.png",
+       dpi = 300)
 
 # plot proportion had hpv test over time by age
 # only for non hispanic white, american indian, and hispanic
@@ -136,10 +151,13 @@ brfss_cervical %>%
   facet_wrap(~X_AGE65YR) +
   theme_bw() + 
   labs(title = "Cervical Cancer Screening by Age Group",
-       subtitle = "AZ: Have You Ever Had an HPV Test?",
+       subtitle = "USA: Have You Ever Had an HPV Test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_cervical_hpv_age.png",
+       dpi = 300)
 
 # colorectal cancer screening ---- 
 # blood stool test ----
@@ -158,10 +176,13 @@ brfss_colorectal %>%
   facet_wrap(~X_RACE) +
   theme_bw() + 
   labs(title = "Colorectal Cancer Screening by Race / Ethnicity",
-       subtitle = "AZ: Ever had a blood stool test?",
+       subtitle = "USA: Ever had a blood stool test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_colorectal_blood_race.png",
+       dpi = 300)
 
 # plot proportion had hpv test over time by age
 # only for non hispanic white, american indian, and hispanic
@@ -178,10 +199,13 @@ brfss_colorectal %>%
   facet_wrap(~X_AGE65YR) +
   theme_bw() + 
   labs(title = "Colorectal Cancer Screening by Age Group",
-       subtitle = "AZ: Ever had a blood stool test?",
+       subtitle = "USA: Ever had a blood stool test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_colorectal_blood_age.png",
+       dpi = 300)
 
 # plot proportion had hpv test over time by sex
 # only for non hispanic white, american indian, and hispanic
@@ -198,10 +222,13 @@ brfss_colorectal %>%
   facet_wrap(~SEX) +
   theme_bw() + 
   labs(title = "Colorectal Cancer Screening by Sex",
-       subtitle = "AZ: Ever had a blood stool test?",
+       subtitle = "USA: Ever had a blood stool test?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_colorectal_blood_sex.png",
+       dpi = 300)
 
 # sigmoidoscopy colonoscopy ----
 # proportion by race 
@@ -219,10 +246,13 @@ brfss_colorectal %>%
   facet_wrap(~X_RACE) +
   theme_bw() + 
   labs(title = "Colorectal Cancer Screening by Race / Ethnicity",
-       subtitle = "AZ: Ever had a sigmoidoscopy / colonoscopy?",
+       subtitle = "USA: Ever had a sigmoidoscopy / colonoscopy?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_colorectal_colonoscopy_race.png",
+       dpi = 300)
 
 # plot proportion had hpv test over time by age
 # only for non hispanic white, american indian, and hispanic
@@ -239,13 +269,17 @@ brfss_colorectal %>%
   facet_wrap(~X_AGE65YR) +
   theme_bw() + 
   labs(title = "Colorectal Cancer Screening by Age Group",
-       subtitle = "AZ: Ever had a sigmoidoscopy / colonoscopy?",
+       subtitle = "USA: Ever had a sigmoidoscopy / colonoscopy?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
 
+ggsave("figures/charts/brfss_usa_colorectal_colonoscopy_age.png",
+       dpi = 300)
+
 # plot proportion had hpv test over time by sex
 # only for non hispanic white, american indian, and hispanic
+# testing confidence intervals still need to see if this is correct
 brfss_colorectal %>%
   drop_na(HADSIGM3) %>%
   filter(X_RACE %in% c("NHW", "AIAN", "Hispanic"),
@@ -253,7 +287,7 @@ brfss_colorectal %>%
   group_by(YEAR, SEX) %>%
   count(HADSIGM3) %>%
   mutate(prop = n/sum(n),
-         margin = qnorm(0.975)*sqrt(prop*(1-prop)/n),
+         margin = qnorm(0.975)*sqrt(prop*(1-prop)/n), # confidence intervals, need to confirm first
          low = prop - margin,
          high = prop + margin) %>%
   ggplot(mapping = aes(x = YEAR, y = prop, color = HADSIGM3)) +
@@ -263,7 +297,10 @@ brfss_colorectal %>%
   facet_wrap(~SEX) +
   theme_bw() + 
   labs(title = "Colorectal Cancer Screening by Sex",
-       subtitle = "AZ: Ever had a sigmoidoscopy / colonoscopy?",
+       subtitle = "USA: Ever had a sigmoidoscopy / colonoscopy?",
        x = "Year",
        y = "Proportion of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
+
+ggsave("figures/charts/brfss_usa_colorectal_colonoscopy_sex.png",
+       dpi = 300)
