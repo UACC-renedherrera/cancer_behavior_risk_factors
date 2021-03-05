@@ -31,7 +31,7 @@ brfss_breast %>%
   geom_line(size = 1.25) +
   geom_hline(size = 1.25, aes(yintercept = 81.1, color = "2020 Objective 81.1%")) +
   geom_label(aes(label = round(prop, digits = 1))) +
-  ylim(25,100) +
+  ylim(40,100) +
   theme_bw() + 
   theme(legend.position = "bottom", legend.title = element_blank()) +
   scale_color_manual(breaks = c("2020 Objective 81.1%", "AIAN", "Hispanic", "NHW"), values = palette_4_cat) +
@@ -61,14 +61,14 @@ brfss_breast %>%
   geom_line(size = 1.25) +
   geom_hline(size = 1.25, aes(yintercept = 081.1, color = "2020 Objective 81.1%")) +
   geom_label(aes(label = round(prop, digits = 1))) +
-  ylim(25,100) +
+  ylim(40,100) +
   theme_bw() + 
   theme(legend.position = "bottom", legend.title = element_blank()) +
   scale_color_manual(breaks = c("2020 Objective 81.1%", "18-64", ">=65"), values = palette_3_cat) +
   labs(title = "Breast Cancer Screening by Age Group",
        subtitle = "USA: Have You Ever Had a Mammogram?",
        x = "Year",
-       y = "Proportion of Responses",
+       y = "Percentage % of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
 
 ggsave("figures/charts/brfss_usa_breast_age.png",
@@ -90,12 +90,16 @@ brfss_cervical %>%
   ggplot(mapping = aes(x = YEAR, y = prop, color = X_RACE)) +
   geom_point() +
   geom_line(size = 1.25) +
-  geom_hline(size = 1.25, aes(yintercept = 93, color = "2020 Objective")) +
+  geom_hline(size = 1.25, aes(yintercept = 93, color = "2020 Objective 93%")) +
+  geom_label(aes(label = round(prop, digits = 1))) +
+  ylim(40,100) +
   theme_bw() + 
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  scale_color_manual(breaks = c("2020 Objective 93%", "AIAN", "Hispanic", "NHW"), values = palette_4_cat) +
   labs(title = "Cervical Cancer Screening by Race / Ethnicity",
        subtitle = "USA: Have You Ever Had a Pap Test?",
        x = "Year",
-       y = "Proportion of Responses",
+       y = "Percentage % of Responses",
        caption = "Source: 2014-2018 CDC BRFSS")
 
 ggsave("figures/charts/brfss_usa_cervical_pap_race.png",
@@ -111,12 +115,17 @@ brfss_cervical %>%
   group_by(YEAR, X_AGE65YR) %>%
   count(HADPAP2) %>%
   mutate(prop = n/sum(n)) %>%
-  ggplot(mapping = aes(x = YEAR, y = prop, color = HADPAP2)) +
+  filter(HADPAP2 == "Yes") %>%
+  mutate(prop = prop*100) %>%
+  ggplot(mapping = aes(x = YEAR, y = prop, color = X_AGE65YR)) +
   geom_point() +
-  geom_line() +
-  geom_hline(aes(yintercept = 0.93, color = "2020 Objective")) +
-  facet_wrap(~X_AGE65YR) +
+  geom_line(size = 1.25) +
+  geom_hline(size = 1.25, aes(yintercept = 093, color = "2020 Objective 93%")) +
+  geom_label(aes(label = round(prop, digits = 1))) +
+  ylim(40,100) +
   theme_bw() + 
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  scale_color_manual(breaks = c("2020 Objective 81.1%", "18-64", ">=65"), values = palette_3_cat) +
   labs(title = "Cervical Cancer Screening by Age Group",
        subtitle = "USA: Have You Ever Had a Pap Test?",
        x = "Year",
