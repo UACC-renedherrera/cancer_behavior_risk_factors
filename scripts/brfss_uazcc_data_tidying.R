@@ -6,9 +6,9 @@ library(readxl)
 library(lubridate)
 
 # read data ----
-brfss_2014 <- read_excel("data/raw/BRFSS_Screening_2014_18_southern_AZ.xlsx", sheet = 1)
-brfss_2016 <- read_excel("data/raw/BRFSS_Screening_2014_18_southern_AZ.xlsx", sheet = 2)
-brfss_2018 <- read_excel("data/raw/BRFSS_Screening_2014_18_southern_AZ.xlsx", sheet = 3)
+brfss_2014 <- read_excel("data/raw/BRFSS_Screening_20210302.xlsx", sheet = 1)
+brfss_2016 <- read_excel("data/raw/BRFSS_Screening_20210302.xlsx", sheet = 2)
+brfss_2018 <- read_excel("data/raw/BRFSS_Screening_20210302.xlsx", sheet = 3)
 
 # inspect
 glimpse(brfss_2014)
@@ -22,6 +22,81 @@ brfss_2018 <- mutate(brfss_2018, year = 2018)
 
 # tidy the 2014 dataset ----
 brfss_2014 
+
+# 2014 catchment ---- all catchment counties together
+brfss_14_uazcc <- brfss_2014 %>%
+  select(`...1`, 
+         starts_with("UACC"),
+         year)
+
+glimpse(brfss_2014)
+
+brfss_14_uazcc <- brfss_14_uazcc %>%
+  slice(5:8, 10:42) %>%
+  rename( # new = old
+    "variable" = "...1",
+    "all" = "UACC Catchment...2",
+    "all_95_ci_min" = "UACC Catchment...3",
+    "all_95_ci_max" = "UACC Catchment...4",
+    "nhw" = "UACC Catchment...5",
+    "nhw_95_ci_min" = "UACC Catchment...6",
+    "nhw_95_ci_max" = "UACC Catchment...7",
+    "hisp" = "UACC Catchment...8",     
+    "hisp_95_ci_min" = "UACC Catchment...9",    
+    "hisp_95_ci_max" = "UACC Catchment...10",
+    "aian" = "UACC Catchment...11",     
+    "aian_95_ci_min" = "UACC Catchment...12",     
+    "aian_95_ci_max" = "UACC Catchment...13",     
+    "male" = "UACC Catchment...14",     
+    "male_95_ci_min" = "UACC Catchment...15",
+    "male_95_ci_max" = "UACC Catchment...16",     
+    "female" = "UACC Catchment...17",     
+    "female_95_ci_min" = "UACC Catchment...18",     
+    "female_95_ci_max" = "UACC Catchment...19",     
+    "age_7-17" = "UACC Catchment...20",
+    "age_7-17_95_ci_min" = "UACC Catchment...21",     
+    "age_7-17_95_ci_max" = "UACC Catchment...22",     
+    "age_18-64" = "UACC Catchment...23",     
+    "age_18-64_95_ci_min" = "UACC Catchment...24",     
+    "age_18-64_95_ci_max" = "UACC Catchment...25",
+    "age_65" = "UACC Catchment...26",     
+    "age_65_95_ci_min" = "UACC Catchment...27",     
+    "age_65_95_ci_" = "UACC Catchment...28"
+  ) %>%
+  mutate(area = "UAZCC Catchment")
+
+brfss_14_uazcc %>%
+  pivot_longer(
+    cols = c(2,5, 8, 11, 14, 17, 20, 23, 26),
+    names_to = "demographic",
+    names_prefix = NULL,
+    names_sep = NULL,
+    names_pattern = NULL,
+    names_ptypes = list(),
+    names_transform = list(),
+    names_repair = "check_unique",
+    values_to = "estimate",
+    values_drop_na = FALSE,
+    values_ptypes = list(),
+    values_transform = list()
+  ) %>%
+  select(1, 20:23)
+  
+  pivot_longer(
+    cols = c(2,3),
+    names_to = c("ci_min", "ci_max"),
+    names_prefix = NULL,
+    names_sep = NULL,
+    names_pattern = NULL,
+    names_ptypes = list(),
+    names_transform = list(),
+    names_repair = "check_unique",
+    values_to = "estimate",
+    values_drop_na = FALSE,
+    values_ptypes = list(),
+    values_transform = list()
+  )
+
 
 # 2014, pima county ----
 # race ----
