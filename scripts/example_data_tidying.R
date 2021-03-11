@@ -16,6 +16,24 @@ df <- tribble(
   mutate(year = "year_1")
 
 
+# paste col names
+names(df) <- paste(names(df), as.character(df[1,]), as.character(df[2,]), sep = "+")
+df %>% 
+  slice(-1,-2) %>%  # drop rows 1 and 2
+  rename(
+    variable = `na+na+na`,
+    year = `year+year_1+year_1`
+  ) %>% 
+  pivot_longer(starts_with("area")) %>% # pivot
+  separate(name, into = c("area", "demographic", "statistic"), sep = "\\+") %>% # split names
+  mutate(
+    variable = str_replace(variable, "variable_", ""),
+    year = str_replace(year, "year_", ""),
+    area = str_extract(area, "(?<=area_)[0-9]+"),
+    demographic = str_replace(demographic, "demographic_", "")
+  )
+
+
 # into tidy data that looks like this
 # make ideal df
 tidy_df <- tribble(
