@@ -29,6 +29,13 @@ cols_to_pivot <- c(str_subset(names(brfss_2014), "^uacc.*"),
                    str_subset(names(brfss_2014), "^santa.*"),
                    str_subset(names(brfss_2014), "^yuma.*")) 
 
+# make a vector of pretty names for output 
+pretty_names <- c("uacc" = "UAZCC Catchment",
+                  "pima" = "Pima County",
+                  "pinal" = "Pinal County",
+                  "santa" = "Santa Cruz County",
+                  "yuma" = "Yuma County")
+
 brfss_2014 <- brfss_2014 %>% 
   slice(-(1:4)) %>% # remove the na header rows 
   rename(variable = 1) %>% # rename column 1
@@ -37,14 +44,11 @@ brfss_2014 <- brfss_2014 %>%
 
 # clean up the area names 
 brfss_2014 <- brfss_2014 %>%
-  mutate(area = case_when(
-    str_detect(brfss_2014$area, "^uacc") ~ "uacc",
-    str_detect(brfss_2014$area, "^pima") ~ "pima",
-    str_detect(brfss_2014$area, "^pinal") ~ "pinal",
-    str_detect(brfss_2014$area, "^santa") ~ "santa_cruz",
-    str_detect(brfss_2014$area, "^yuma") ~ "yuma",
-  )) %>%
-  mutate(year = 2014)
+  mutate(
+    area = str_extract(brfss_2014$area, "^[a-z]+"),
+    area_name = pretty_names[area]
+  ) %>%
+  mutate(year = 2014) # add the year
 
 # 2016 ----
 # inspect
@@ -69,14 +73,11 @@ brfss_2016 <- brfss_2016 %>%
 
 # clean up the area names 
 brfss_2016 <- brfss_2016 %>%
-  mutate(area = case_when(
-    str_detect(brfss_2016$area, "^uacc") ~ "uacc",
-    str_detect(brfss_2016$area, "^pima") ~ "pima",
-    str_detect(brfss_2016$area, "^pinal") ~ "pinal",
-    str_detect(brfss_2016$area, "^santa") ~ "santa_cruz",
-    str_detect(brfss_2016$area, "^yuma") ~ "yuma",
-  )) %>%
-  mutate(year = 2016)
+  mutate(
+    area = str_extract(brfss_2016$area, "^[a-z]+"),
+    area_name = pretty_names[area]
+  ) %>%
+  mutate(year = 2016) # add the year
 
 # 2018 ----
 # inspect
@@ -93,6 +94,8 @@ cols_to_pivot <- c(str_subset(names(brfss_2018), "^uacc.*"),
                    str_subset(names(brfss_2018), "^santa.*"),
                    str_subset(names(brfss_2018), "^yuma.*")) 
 
+
+
 brfss_2018 <- brfss_2018 %>% 
   slice(-(1:4)) %>% # remove the na header rows 
   rename(variable = 1) %>% # rename column 1
@@ -101,14 +104,11 @@ brfss_2018 <- brfss_2018 %>%
 
 # clean up the area names 
 brfss_2018 <- brfss_2018 %>%
-  mutate(area = case_when(
-    str_detect(brfss_2018$area, "^uacc") ~ "uacc",
-    str_detect(brfss_2018$area, "^pima") ~ "pima",
-    str_detect(brfss_2018$area, "^pinal") ~ "pinal",
-    str_detect(brfss_2018$area, "^santa") ~ "santa_cruz",
-    str_detect(brfss_2018$area, "^yuma") ~ "yuma",
-  )) %>%
-  mutate(year = 2018)
+  mutate(
+    area = str_extract(brfss_2018$area, "^[a-z]+"),
+    area_name = pretty_names[area]
+  ) %>%
+  mutate(year = 2018) # add the year
 
 # join everything all together 
 brfss_uazcc <- brfss_2014 %>%
