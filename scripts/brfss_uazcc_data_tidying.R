@@ -115,5 +115,9 @@ brfss_uazcc <- brfss_2014 %>%
   full_join(brfss_2016) %>%
   full_join(brfss_2018)
 
+# final touches to column types 
+brfss_uazcc <- brfss_uazcc %>%
+  mutate(value = as.numeric(value))
+
 # save to disk for processing 
 write_rds(brfss_uazcc, "data/tidy/brfss_az_catchment.rds")
