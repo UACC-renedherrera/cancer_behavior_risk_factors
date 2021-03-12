@@ -12,7 +12,7 @@ library(foreign)
 unzip("data/raw/LLCP2014XPT.ZIP", exdir = "data/raw/brfss_2014")
 
 # read to data
-brfss_2014 <- read.xport("data/raw/brfss_2014/LLCP2014.XPT")
+brfss_2014 <- read.xport("data/raw/brfss_2014/LLCP2014.XPT") 
 
 # inspect
 str(brfss_2014)
@@ -395,6 +395,23 @@ brfss_2018 <- brfss_2018 %>%
 
 # save to disk
 write_rds(brfss_2018, "data/tidy/brfss_usa_2018.RDS")
+
+# national brfss data ----
+# join all national brfss data to one set 
+brfss <- brfss_2014 %>%
+  full_join(brfss_2016) %>%
+  full_join(brfss_2018)
+
+# save to disk 
+write_rds(brfss, "data/tidy/brfss_usa_complete.rds")
+
+# arizona brfss data ---- 
+# filter complete set to az only 
+brfss_az <- brfss %>%
+  filter(X_STATE == "4")
+
+# save to disk 
+write_rds(brfss_az, "data/tidy/brfss_az_complete.rds")
 
 # cervical cancer brfss + demographics 
 brfss_2018_cervical <- brfss_2018 %>% 
