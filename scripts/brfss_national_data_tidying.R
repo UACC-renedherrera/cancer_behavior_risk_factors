@@ -111,7 +111,12 @@ brfss_2014 <- brfss_2014 %>%
                           "Male" = "1",
                           "Female" = "2",
                      "Unknown" = "7",
-                     "Refused" = "9"))
+                     "Refused" = "9"),
+    HADSGCO1 = fct_recode(HADSGCO1,
+                          "Sigmoidoscopy" = "1",
+                          "Colonoscopy" = "2",
+                          "Unknown" = "7",
+                          "Refused" = "9"))
 
 # save to disk
 write_rds(brfss_2014, "data/tidy/brfss_usa_2014.RDS")
@@ -251,7 +256,12 @@ brfss_2016 <- brfss_2016 %>%
                           "Male" = "1",
                           "Female" = "2",
                           "Unknown" = "7",
-                          "Refused" = "9"))
+                          "Refused" = "9"),
+         HADSGCO1 = fct_recode(HADSGCO1,
+                                                "Sigmoidoscopy" = "1",
+                                                "Colonoscopy" = "2",
+                                                "Unknown" = "7",
+                                                "Refused" = "9"))
 
 # save to disk
 write_rds(brfss_2016, "data/tidy/brfss_usa_2016.RDS")
@@ -391,7 +401,12 @@ brfss_2018 <- brfss_2018 %>%
                           "Male" = "1",
                           "Female" = "2",
                           "Unknown" = "7",
-                          "Refused" = "9"))
+                          "Refused" = "9"),
+         HADSGCO1 = fct_recode(HADSGCO1,
+                               "Sigmoidoscopy" = "1",
+                               "Colonoscopy" = "2",
+                               "Unknown" = "7",
+                               "Refused" = "9"))
 
 # save to disk
 write_rds(brfss_2018, "data/tidy/brfss_usa_2018.RDS")
