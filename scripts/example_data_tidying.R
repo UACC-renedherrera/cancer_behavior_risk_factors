@@ -1,7 +1,8 @@
-# set up
+# set up ----
 library(here)
 library(tidyverse)
 
+# read data ---- 
 # how to efficiently take data that looks like this (much wider in real life)
 df <- tribble(
   ~na,  ~area_1,         ~area_1_1,         ~area_1_2,         ~area_1_3,         ~area_1_4,         ~area_1_5,         ~area_1_6,         ~area_1_7,         ~area_1_8,         ~area_1_9,         ~area_1_10,         ~area_1_11,         ~area_2_1,         ~area_2_2,         ~area_2_3,         ~area_2_4,         ~area_2_5,         ~area_2_6,         ~area_2_7,         ~area_2_8,         ~area_2_9,         ~area_2_10,         ~area_2_11,         ~area_2,
@@ -15,25 +16,7 @@ df <- tribble(
   ) %>%
   mutate(year = "year_1")
 
-
-# paste col names
-names(df) <- paste(names(df), as.character(df[1,]), as.character(df[2,]), sep = "+")
-df %>% 
-  slice(-1,-2) %>%  # drop rows 1 and 2
-  rename(
-    variable = `na+na+na`,
-    year = `year+year_1+year_1`
-  ) %>% 
-  pivot_longer(starts_with("area")) %>% # pivot
-  separate(name, into = c("area", "demographic", "statistic"), sep = "\\+") %>% # split names
-  mutate(
-    variable = str_replace(variable, "variable_", ""),
-    year = str_replace(year, "year_", ""),
-    area = str_extract(area, "(?<=area_)[0-9]+"),
-    demographic = str_replace(demographic, "demographic_", "")
-  )
-
-
+# the long way ----
 # into tidy data that looks like this
 # make ideal df
 tidy_df <- tribble(
@@ -47,7 +30,6 @@ tidy_df <- tribble(
   "year_1", "variable_2", "area_2", "demographic_1", 72.1, 69.1, 75.2,
   "year_1", "variable_2", "area_2", "demographic_2", 67.5, 64.1,	70.8,
 ) # and so on, much longer in real life 
-
 
 # I have tried to do it this way
 # select the columns by grouping
@@ -73,3 +55,21 @@ df_area_1 <- df_area_1 %>%
   )
 
 # and repeat until I am ready for a full_join 
+
+# the tidy and efficient way ---- 
+# paste col names
+names(df) <- paste(names(df), as.character(df[1,]), as.character(df[2,]), sep = "+")
+df %>% 
+  slice(-1,-2) %>%  # drop rows 1 and 2
+  rename(
+    variable = `na+na+na`,
+    year = `year+year_1+year_1`
+  ) %>% 
+  pivot_longer(starts_with("area")) %>% # pivot
+  separate(name, into = c("area", "demographic", "statistic"), sep = "\\+") %>% # split names
+  mutate(
+    variable = str_replace(variable, "variable_", ""),
+    year = str_replace(year, "year_", ""),
+    area = str_extract(area, "(?<=area_)[0-9]+"),
+    demographic = str_replace(demographic, "demographic_", "")
+  )
