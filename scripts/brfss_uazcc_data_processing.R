@@ -4,26 +4,52 @@ library(here)
 library(tidyverse)
 library(ggthemes)
 
-# read data ---- 
-brfss_age <- read_rds("data/tidy/brfss_az_catchment_age.rds")
-brfss_race <- read_rds("data/tidy/brfss_az_catchment_race.rds")
-brfss_sex <- read_rds("data/tidy/brfss_az_catchment_sex.rds")
+# read brfss data ---- 
+uazcc <- read_rds("data/tidy/brfss_az_catchment.rds")
+
+# color palettes 
+palette_5_cat <- c("#386cb0",
+                   "#ffff99",
+                   "#fdc086",
+                   "#beaed4",
+                   "#7fc97f")
+
+palette_4_cat <- c("#ffff99",
+                   "#fdc086",
+                   "#beaed4",
+                   "#7fc97f")
+
+palette_3_cat <- c("#fdc086",
+                   "#beaed4",
+                   "#7fc97f")
+
+
+
+
+glimpse(uazcc)
+str(uazcc$variable)
+#dput(uazcc$variable)
 
 # breast ----
-# breast x age 
-brfss_age %>%
-  filter(label == "Had a mammogram") %>%
-  ggplot(mapping = aes(x = year, y = value, color = age)) +
-  geom_point() +
-  geom_line() +
-  facet_wrap(~county) +
-  theme_base() +
-  labs(y = "Proportion of Responses",
+# breast x area x all 
+uazcc %>%
+  filter(str_detect(uazcc$variable, ".*mammogram.*")) %>%
+  filter(demographic == "All Respondents",
+         statistic == "Mean") %>%
+  ggplot(mapping = aes(x = year, y = value, color = area_name)) +
+  geom_point(size = 3) +
+  geom_line(size = 1.5) +
+  #geom_label(aes(label = round(value, digits = 1))) +
+  ylim(40,90) +
+  theme_bw() +
+  labs(y = "Percentage of Responses",
        x = "Year",
-       color = "Age",
-       title = "Breast Cancer Screening",
+       color = "Area",
+       title = "Breast Cancer Screening: UAZCC Catchment area",
        subtitle = "Had a mammogram?",
-       caption = "Source: AZ BRFSS")
+       caption = "Source: AZ BRFSS") +
+  scale_color_colorblind(breaks = c("UAZCC Catchment", "Pima County", "Pinal County", "Santa Cruz County", "Yuma County")) +
+  theme(legend.position = "bottom", legend.title = element_blank()) 
 
 # breast x race
 brfss_race %>%
