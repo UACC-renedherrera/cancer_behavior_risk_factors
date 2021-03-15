@@ -335,7 +335,8 @@ uazcc_screening_2018 <- usa %>%
   full_join(uazcc_all) %>%
   full_join(nhw) %>%
   full_join(hisp) %>%
-  full_join(aian)
+  full_join(aian) %>%
+  mutate(year = 2018)
 
 # spread for a wide table
 screening_2018 <- uazcc_screening_2018 %>%
@@ -343,6 +344,11 @@ screening_2018 <- uazcc_screening_2018 %>%
   pivot_wider(
     names_from = "area",
     values_from = "percentage"
+  )
+
+screening_2018 %>%
+  knitr::kable(
+    col.names = c("Screening", "Year", "US", "AZ", "Catchment", "NHW n=1794", "Hispanic n=555", "AI n=68")
   )
 
 # 2016 ----
@@ -646,7 +652,8 @@ uazcc_screening_2016 <- usa %>%
   full_join(uazcc_all) %>%
   full_join(nhw) %>%
   full_join(hisp) %>%
-  full_join(aian)
+  full_join(aian) %>%
+  mutate(year = 2016)
 
 # spread for a wide table
 screening_2016 <- uazcc_screening_2016 %>%
@@ -654,6 +661,11 @@ screening_2016 <- uazcc_screening_2016 %>%
   pivot_wider(
     names_from = "area",
     values_from = "percentage"
+  )
+
+screening_2016 %>%
+  knitr::kable(
+    col.names = c("Screening", "Year", "US", "AZ", "Catchment", "NHW n=2785", "Hispanic n=625", "AI n=60")
   )
 
 # 2014 ----
@@ -957,7 +969,8 @@ uazcc_screening_2014 <- usa %>%
   full_join(uazcc_all) %>%
   full_join(nhw) %>%
   full_join(hisp) %>%
-  full_join(aian)
+  full_join(aian) %>%
+  mutate(year = 2014)
 
 # spread for a wide table
 screening_2014 <- uazcc_screening_2014 %>%
@@ -967,4 +980,77 @@ screening_2014 <- uazcc_screening_2014 %>%
     values_from = "percentage"
   )
 
-# data visualizations
+screening_2014 %>%
+  knitr::kable(
+    col.names = c("Screening", "Year", "US", "AZ", "Catchment", "NHW n=3476", "Hispanic n=934", "AI n=113")
+      )
+
+# data visualizations ----
+# join the long screening tables 
+g <- uazcc_screening_2014 %>%
+  full_join(uazcc_screening_2016) %>%
+  full_join(uazcc_screening_2018)
+
+# prepare palettes
+palette_4_cat <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c")
+palette_3_cat <- c("#a6cee3", "#1f78b4", "#b2df8a")
+
+# breast
+g %>%
+  filter(screening == "Had a mammogram") %>%
+  ggplot(mapping = aes(x = year, y = percentage, color = area)) +
+  geom_line(size = 1.25) +
+  geom_label(aes(label = round(percentage, digits = 2))) +
+  scale_color_discrete(breaks = c("usa", "az", "uazcc", "nhw", "hisp", "aian")) +
+  labs(title = "Breast Cancer Screening",
+       subtitle = "Have You Ever Had a Mammogram?",
+       x = "Year",
+       y = "Percentage % of Responses",
+       caption = "Source: 2014-2018 CDC BRFSS") +
+  theme_bw()
+
+ggsave("figures/charts/brfss_catchment_mammogram.png",
+       dpi = 300,
+       width = 16,
+       height = 10,
+       scale = .666)
+
+# cervical
+g %>%
+  filter(screening == "Had a Pap test") %>%
+  ggplot(mapping = aes(x = year, y = percentage, color = area)) +
+  geom_line(size = 1.25) +
+  geom_label(aes(label = round(percentage, digits = 2))) +
+  scale_color_discrete(breaks = c("usa", "az", "uazcc", "nhw", "hisp", "aian")) +
+  labs(title = "Cervical Cancer Screening",
+       subtitle = "Have You Ever Had a Pap Test?",
+       x = "Year",
+       y = "Percentage % of Responses",
+       caption = "Source: 2014-2018 CDC BRFSS") +
+  theme_bw()
+
+ggsave("figures/charts/brfss_catchment_pap.png",
+       dpi = 300,
+       width = 16,
+       height = 10,
+       scale = .666)
+
+# colorectal
+g %>%
+  filter(screening == "Ever had sigmoidoscopy/colonoscopy") %>%
+  ggplot(mapping = aes(x = year, y = percentage, color = area)) +
+  geom_line(size = 1.25) +
+  geom_label(aes(label = round(percentage, digits = 2))) +
+  scale_color_discrete(breaks = c("usa", "az", "uazcc", "nhw", "hisp", "aian")) +
+  labs(title = "Colorectal Cancer Screening",
+       subtitle = "Have You Ever Had a Sigmoidoscopy / Colonoscopy?",
+       x = "Year",
+       y = "Percentage % of Responses",
+       caption = "Source: 2014-2018 CDC BRFSS") +
+  theme_bw()
+
+ggsave("figures/charts/brfss_catchment_crc.png",
+       dpi = 300,
+       width = 16,
+       height = 10,
+       scale = .666)
