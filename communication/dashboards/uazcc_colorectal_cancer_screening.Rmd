@@ -1,0 +1,59 @@
+---
+title: "Colorectal Cancer Screening in Southern Arizona"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+# packages 
+library(flexdashboard)
+library(tidyverse)
+library(ggthemes)
+library(RColorBrewer)
+library(plotly)
+library(leaflet)
+library(tigris)
+library(sf)
+library(knitr)
+
+# options
+options(tigris_use_cache = TRUE)
+
+# read data
+# colorectal cancer screening 
+crc_plot <- read_rds("../../data/tidy/uazcc_brfss_crc_plot.rds")
+crc_table <- read_rds("../../data/tidy/uazcc_brfss_crc_table.rds")
+crc_map <- read_rds("../../data/tidy/uazcc_brfss_crc_map.rds")
+```
+    
+Row
+-------------------------------------
+    
+### Table
+    
+    
+```{r}
+crc_table %>%
+  kable(
+    col.names = c("Year", "UAZCC Catchment", "Pima County", "Pinal County", "Santa Cruz County*", "Yuma County"),
+    caption = "Percentage of responses who have ever received a colonoscopy; *Santa Cruz County includes Santa Cruz, Cochise, Graham, and Greenlee counties"
+  )
+```
+   
+Row
+-------------------------------------
+    
+### Chart
+
+```{r}
+ggplotly(crc_plot) %>%
+  layout(legend = list(orientation = 'h'))
+```
+    
+### Map
+
+```{r}
+crc_map
+```
