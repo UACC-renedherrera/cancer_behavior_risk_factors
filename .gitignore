@@ -42,6 +42,7 @@ vignettes/*.pdf
 data/
 figures/
 communication/reports/
+communication/dashboards/rsconnect/
 GIS/
 
 # ignore filetypes
@@ -52,3 +53,4 @@ GIS/
 *.docx
 *.csv
 *.pdf
+*.html
