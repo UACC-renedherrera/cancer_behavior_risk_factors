@@ -55,8 +55,6 @@ breast_plot <- uazcc %>%
   ggplot(mapping = aes(x = year, y = value, color = area_name)) +
   geom_point(size = 3) +
   geom_line(size = 1.5) +
-  #geom_label(aes(label = round(value, digits = 1))) +
-  ylim(40,90) +
   theme_bw() +
   labs(y = "Percentage of Responses",
        x = "Year",
