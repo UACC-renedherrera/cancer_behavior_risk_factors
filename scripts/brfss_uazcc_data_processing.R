@@ -15,6 +15,15 @@ options(tigris_use_cache = TRUE)
 # read brfss data ---- 
 uazcc <- read_rds("data/tidy/brfss_az_catchment.rds")
 
+# add new areas where Santa Cruz == c("Santa Cruz", "Cochise", "Graham", "Greenlee")
+cochise <- uazcc %>%
+  filter(str_detect(uazcc$area, "santa")) %>%
+  mutate(area = "cochise",
+         area_name = "Cochise County")
+
+uazcc_mapping <- uazcc %>%
+  full_join(cochise)
+
 # color palettes 
 palette_5_cat <- c("#386cb0",
                    "#ffff99",
@@ -74,6 +83,31 @@ breast_table <- uazcc %>%
 
 write_rds(breast_table, "data/tidy/uazcc_brfss_mammogram_table.rds")
 
+# map 
+# mammogram
+az_counties <- counties(state = "az")
+
+uazcc_sf <- geo_join(az_counties, uazcc_mapping, by_df = "area_name", by_sp = "NAMELSAD", how = "inner")
+
+uazcc_sf_had_mam <- st_as_sf(
+  uazcc_sf,
+  crs = "epsg4326") %>%
+  filter(str_detect(uazcc_sf$variable, ".*mammogram.*")) %>%
+  filter(demographic == "All Respondents",
+         statistic == "Mean",
+         year == "2018")
+
+uazcc_sf_had_mam_map <- ggplot(uazcc_sf_had_mam) +
+  geom_sf(mapping = aes(fill = value)) +
+  geom_sf_label(aes(label = NAME)) +
+  scale_fill_continuous(name = "", type = "viridis") +
+  theme_map() +
+  labs(title = "Breast Cancer Screening",
+       subtitle = "Had a mammogram? Percentage of responses",
+       caption = "Source: 2018 AZ BRFSS") 
+
+write_rds(uazcc_sf_had_mam_map, "data/tidy/uazcc_brfss_mammogram_map.rds")
+
 # cervical ----
 # plot 
 # cervical x area x all 
@@ -112,34 +146,79 @@ cervical_table <- uazcc %>%
 
 write_rds(cervical_table, "data/tidy/uazcc_brfss_pap_table.rds")
 
-# GIS
-az_counties <- counties(state = "az")
-
-uazcc_sf <- geo_join(az_counties, uazcc, by_df = "area_name", by_sp = "NAMELSAD", how = "inner")
-
-uazcc_sf <- inner_join(uazcc, az_counties, by = c("area_name" = "NAMELSAD"))
-  
-uazcc_sf <- st_as_sf(
+# map 
+uazcc_sf_had_pap <- st_as_sf(
   uazcc_sf,
   crs = "epsg4326") %>%
   filter(str_detect(uazcc_sf$variable, "Had a Pap.*")) %>%
   filter(demographic == "All Respondents",
-         statistic == "Mean")
+         statistic == "Mean",
+         year == "2018")
 
-uazcc_sf <- as(uazcc_sf, "Spatial")
+uazcc_sf_had_pap_map <- ggplot(uazcc_sf_had_pap) +
+  geom_sf(mapping = aes(fill = value)) +
+  geom_sf_label(aes(label = NAME)) +
+  scale_fill_continuous(name = "", type = "viridis") +
+  theme_map() +
+  labs(title = "Cervical Cancer Screening",
+       subtitle = "Had a pap test? Percentage of responses",
+       caption = "Source: 2018 AZ BRFSS") 
 
-uazcc_sf %>%
-  filter(str_detect(uazcc_sf$variable, "Had a Pap.*")) %>%
+write_rds(uazcc_sf_had_pap_map, "data/tidy/uazcc_brfss_hadpap_map.rds")
+
+# colorectal ----
+# plot
+crc_plot <- uazcc %>%
+  filter(str_detect(uazcc$variable, "Ever had sigmoidoscopy.*")) %>%
   filter(demographic == "All Respondents",
          statistic == "Mean") %>%
-  leaflet() %>%
-  addProviderTiles("Stamen.Tonerlite") %>%
-  addPolygons()
+  ggplot(mapping = aes(x = year, y = value, color = area_name)) +
+  geom_point(size = 3) +
+  geom_line(size = 1.5) +
+  #geom_label(aes(label = round(value, digits = 1))) +
+  # ylim(40,90) +
+  theme_bw() +
+  labs(y = "Percentage of Responses",
+       x = "Year",
+       color = "Area",
+       title = "Colorectal Cancer Screening",
+       subtitle = "Ever had a sigmoidoscopy or colonoscopy?",
+       caption = "Source: AZ BRFSS") +
+  scale_color_discrete(breaks = c("UAZCC Catchment", "Pima County", "Pinal County", "Santa Cruz County", "Yuma County")) +
+  theme(legend.position = "bottom", legend.title = element_blank()) 
 
-prj <- "+proj=longlat +datum=WGS84"
+ggplotly(crc_plot) %>%
+  layout(legend = list(orientation = 'h'))
 
-mapview(uazcc_sf)
+write_rds(crc_plot, "data/tidy/uazcc_brfss_crc_plot.rds")
 
-leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = uazcc)
+# table
+# cervical x area x all 
+crc_table <- uazcc %>%
+  filter(str_detect(uazcc$variable, "Ever had sigmoidoscopy.*")) %>%
+  filter(demographic == "All Respondents",
+         statistic == "Mean") %>%
+  select(year, area_name, value) %>%
+  pivot_wider(names_from = "area_name", values_from = "value")
+
+write_rds(crc_table, "data/tidy/uazcc_brfss_crc_table.rds")
+
+# map 
+uazcc_sf_crc <- st_as_sf(
+  uazcc_sf,
+  crs = "epsg4326") %>%
+  filter(str_detect(uazcc_sf$variable, "Ever had sigmoidoscopy.*")) %>%
+  filter(demographic == "All Respondents",
+         statistic == "Mean",
+         year == "2018")
+
+uazcc_sf_crc_map <- ggplot(uazcc_sf_crc) +
+  geom_sf(mapping = aes(fill = value)) +
+  geom_sf_label(aes(label = NAME)) +
+  scale_fill_continuous(name = "", type = "viridis") +
+  theme_map() +
+  labs(title = "Colorectal Cancer Screening",
+       subtitle = "Had a colonoscopy? Percentage of responses",
+       caption = "Source: 2018 AZ BRFSS") 
+
+write_rds(uazcc_sf_crc_map, "data/tidy/uazcc_brfss_crc_map.rds")
