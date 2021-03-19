@@ -41,7 +41,7 @@ vignettes/*.pdf
 # ignore folders
 data/
 figures/
-communication/
+communication/reports/
 GIS/
 
 # ignore filetypes
