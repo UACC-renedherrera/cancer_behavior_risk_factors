@@ -65,6 +65,8 @@ breast_plot <- uazcc %>%
   scale_color_discrete(breaks = c("UAZCC Catchment", "Pima County", "Pinal County", "Santa Cruz County", "Yuma County")) +
   theme(legend.position = "bottom", legend.title = element_blank()) 
 
+breast_plot
+
 ggplotly(breast_plot) %>%
   layout(legend = list(orientation = 'h'))
 
@@ -78,6 +80,15 @@ breast_table <- uazcc %>%
          statistic == "Mean") %>%
   select(year, area_name, value) %>%
   pivot_wider(names_from = "area_name", values_from = "value")
+
+breast_table
+
+library(reactable)
+reactable(breast_table,
+          highlight = TRUE,
+          outlined = TRUE,
+          fullWidth = FALSE
+)
 
 write_rds(breast_table, "data/tidy/uazcc_brfss_mammogram_table.rds")
 
@@ -141,6 +152,14 @@ cervical_table <- uazcc %>%
          statistic == "Mean") %>%
   select(year, area_name, value) %>%
   pivot_wider(names_from = "area_name", values_from = "value")
+
+library(formattable)
+
+formattable(cervical_table,
+            list(
+             `UAZCC Catchment`  = color_bar("#f7fdfb")
+            ))
+
 
 write_rds(cervical_table, "data/tidy/uazcc_brfss_pap_table.rds")
 
